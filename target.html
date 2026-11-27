@@ -5,7 +5,7 @@
 <h1>勇者ローグ 属性チェッカー</h1><p class="sub">属性を複数選択して、モンスターの弱点(必中)を確認できます。(ちゆコップ[★]非対応)</p>
 <nav class="nav"><a href="./index.html">対象外一覧</a><a href="./target.html" class="active" aria-current="page">対象一覧</a></nav>
 <section class="panel"><h2>属性を選択（複数選択可）</h2><div class="attrs" id="attrs"></div><p class="muted">選択中の属性は青く表示されます。もう一度押すと解除できます。</p></section>
-<section class="panel"><div class="row"><h2>対象一覧</h2><span class="count" id="count">0体</span></div><p class="muted">選択した属性のうち、1つ以上が弱点になっているモンスターを表示します。</p><input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み"><ul class="list" id="list"></ul><div class="actions"><span class="muted">収録データ：{monsters.length}件</span><button class="reset" id="reset">選択をすべて解除</button></div></section>
+<section class="panel"><div class="row"><h2>対象一覧</h2><span class="count" id="count">0体</span></div><p class="muted">選択した属性のうち、1つ以上が弱点になっているモンスターを表示します。</p><input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み"><ul class="list" id="list"></ul><div class="actions"><span class="muted">収録データ：<span id="data-count"></span>件</span><button class="reset" id="reset">選択をすべて解除</button></div></section>
 <footer>データ出典：<a href="https://wikiwiki.jp/yusharogue/モンスター" target="_blank" rel="noopener">勇者ローグ Wiki「モンスター」</a>（弱点欄）<br>※「対象外」は選択属性が弱点欄に記載されていないという意味で、属性攻撃が無効という意味ではありません。<br>※対象一覧は選択属性のうち1つ以上が弱点として記載されているモンスターです。</footer>
 </main><script>
 document.getElementById("data-count").textContent = monsters.length;
