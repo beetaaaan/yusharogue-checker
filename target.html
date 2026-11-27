@@ -8,6 +8,7 @@
 <section class="panel"><div class="row"><h2>対象一覧</h2><span class="count" id="count">0体</span></div><p class="muted">選択した属性のうち、1つ以上が弱点になっているモンスターを表示します。</p><input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み"><ul class="list" id="list"></ul><div class="actions"><span class="muted">収録データ：{monsters.length}件</span><button class="reset" id="reset">選択をすべて解除</button></div></section>
 <footer>データ出典：<a href="https://wikiwiki.jp/yusharogue/モンスター" target="_blank" rel="noopener">勇者ローグ Wiki「モンスター」</a>（弱点欄）<br>※「対象外」は選択属性が弱点欄に記載されていないという意味で、属性攻撃が無効という意味ではありません。<br>※対象一覧は選択属性のうち1つ以上が弱点として記載されているモンスターです。</footer>
 </main><script>
+document.getElementById("data-count").textContent = monsters.length;
 const attributes=["炎","水","風","土","雷","闇","聖"],selected=new Set();
 const attrsEl=document.getElementById("attrs"),listEl=document.getElementById("list"),countEl=document.getElementById("count"),searchEl=document.getElementById("search");
 function render(){
