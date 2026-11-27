@@ -1,21 +1,113 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172033"><title>勇者ローグ 属性チェッカー - 対象一覧</title><style>
-:root{color-scheme:dark;--bg:#101827;--panel:#1b2638;--panel2:#243248;--text:#eef3fb;--muted:#a9b7ca;--accent:#79b8ff;--line:#35445b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px 14px}main{max-width:760px;margin:auto}h1{font-size:1.55rem;margin:0 0 8px}.sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}h2{font-size:1.05rem;margin:0 0 12px}.attrs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}button{font:inherit;cursor:pointer}.attr{border:1px solid #52627a;border-radius:11px;padding:12px 6px;background:var(--panel2);color:var(--text);font-weight:700}.attr[aria-pressed=true]{background:#24578b;border-color:#79b8ff;box-shadow:0 0 0 2px #79b8ff33}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.count{background:#24578b;color:#eaf4ff;padding:5px 10px;border-radius:999px;font-size:.88rem;font-weight:700}input{width:100%;margin:12px 0 0;padding:12px;border-radius:10px;border:1px solid #52627a;background:#111c2c;color:var(--text);font:inherit}.list{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.list li{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px}.muted{color:var(--muted);font-size:.84rem}.actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}.reset,.nav a{border:1px solid #65758d;background:transparent;color:var(--text);border-radius:9px;padding:9px 12px;text-decoration:none;display:inline-block}.nav{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nav a.active{background:#24578b;border-color:#79b8ff}footer{color:var(--muted);font-size:.82rem;line-height:1.6;margin:18px 2px}a{color:var(--accent)}@media(max-width:480px){body{padding:18px 10px}.attrs{grid-template-columns:repeat(4,1fr);gap:7px}.attr{padding:11px 3px}.list{grid-template-columns:1fr}.panel{padding:14px}}
-</style><script src="./monsters.js"></script></head><body><main>
-<h1>勇者ローグ 属性チェッカー</h1><p class="sub">属性を複数選択して、モンスターの弱点を確認できます。</p>
-<nav class="nav"><a href="./index.html">対象外一覧</a><a href="./target.html" class="active" aria-current="page">対象一覧</a></nav>
-<section class="panel"><h2>属性を選択（複数選択可）</h2><div class="attrs" id="attrs"></div><p class="muted">選択中の属性は青く表示されます。もう一度押すと解除できます。</p></section>
-<section class="panel"><div class="row"><h2>対象一覧</h2><span class="count" id="count">0体</span></div><p class="muted">選択した属性のうち、1つ以上が弱点になっているモンスターを表示します。</p><input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み"><ul class="list" id="list"></ul><div class="actions"><span class="muted">収録データ：{monsters.length}件</span><button class="reset" id="reset">選択をすべて解除</button></div></section>
-<footer>データ出典：<a href="https://wikiwiki.jp/yusharogue/モンスター" target="_blank" rel="noopener">勇者ローグ Wiki「モンスター」</a>（弱点欄）<br>※「対象外」は選択属性が弱点欄に記載されていないという意味で、属性攻撃が無効という意味ではありません。<br>※対象一覧は選択属性のうち1つ以上が弱点として記載されているモンスターです。</footer>
-</main><script>
-const attributes=["炎","水","風","土","雷","闇","聖"],selected=new Set();
-const attrsEl=document.getElementById("attrs"),listEl=document.getElementById("list"),countEl=document.getElementById("count"),searchEl=document.getElementById("search");
-function render(){
- attrsEl.replaceChildren();attributes.forEach(a=>{const b=document.createElement("button");b.className="attr";b.type="button";b.textContent=a+(selected.has(a)?" ✓":"");b.setAttribute("aria-pressed",String(selected.has(a)));b.addEventListener("click",()=>{selected.has(a)?selected.delete(a):selected.add(a);render()});attrsEl.appendChild(b)});
- const chosen=[...selected],q=searchEl.value.trim().toLocaleLowerCase("ja");listEl.replaceChildren();
- if(!chosen.length){countEl.textContent="0体";const li=document.createElement("li");li.textContent="上のボタンから属性を選択してください。";listEl.appendChild(li);return}
- const filtered=monsters.filter(([name,weaknesses])=>selected.some(a => weaknesses.includes(a)) && name.toLocaleLowerCase("ja").includes(q));countEl.textContent=filtered.length+"体";
- if(!filtered.length){const li=document.createElement("li");li.textContent="該当するモンスターはいません。";listEl.appendChild(li)}else filtered.forEach(([name])=>{const li=document.createElement("li");li.textContent=name;listEl.appendChild(li)});
-}
-searchEl.addEventListener("input",render);document.getElementById("reset").addEventListener("click",()=>{selected.clear();searchEl.value="";render()});render();
-</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>勇者ローグ 属性チェッカー - 対象一覧</title>
+  <style>
+    :root { color-scheme: light; --ink:#222; --muted:#666; --line:#ddd; --accent:#4263a5; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 16px 48px; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:#f5f6f8; }
+    main { max-width:900px; margin:0 auto; }
+    h1 { font-size:1.55rem; margin:0 0 8px; }
+    .desc { color:var(--muted); margin:0 0 18px; line-height:1.6; }
+    .nav { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+    .nav a { color:var(--accent); }
+    .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+    .attrs { display:flex; flex-wrap:wrap; gap:8px; }
+    button.attr, button.reset { border:1px solid #bbb; border-radius:8px; padding:9px 14px; background:#fff; cursor:pointer; font:inherit; }
+    button.attr[aria-pressed="true"] { background:var(--accent); color:white; border-color:var(--accent); }
+    button.reset { margin-top:12px; background:#f0f0f0; }
+    #count { font-weight:700; margin:4px 0 12px; }
+    #search { width:100%; max-width:420px; padding:10px 12px; border:1px solid #bbb; border-radius:8px; font:inherit; }
+    .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
+    .monster { background:#fff; border:1px solid var(--line); border-radius:9px; padding:12px; }
+    .name { font-weight:700; margin-bottom:5px; }
+    .weakness { color:var(--muted); font-size:.92rem; }
+    .empty { color:var(--muted); padding:18px 4px; }
+    @media (max-width:520px) { body { padding:18px 12px 36px; } h1 { font-size:1.3rem; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>勇者ローグ 属性チェッカー：対象一覧</h1>
+  <p class="desc">選択した属性のうち、1つ以上が弱点のモンスターを表示します。<br>属性を複数選択できます。選択を解除すると全モンスターを表示します。</p>
+  <nav class="nav">
+    <a href="index.html">対象外一覧へ切り替え</a>
+  </nav>
+  <section class="panel">
+    <div class="attrs" id="attrs" aria-label="属性選択">
+      <button class="attr" type="button" data-attr="炎" aria-pressed="false">炎</button><button class="attr" type="button" data-attr="水" aria-pressed="false">水</button><button class="attr" type="button" data-attr="風" aria-pressed="false">風</button><button class="attr" type="button" data-attr="土" aria-pressed="false">土</button><button class="attr" type="button" data-attr="雷" aria-pressed="false">雷</button><button class="attr" type="button" data-attr="闇" aria-pressed="false">闇</button><button class="attr" type="button" data-attr="聖" aria-pressed="false">聖</button>
+    </div>
+    <button class="reset" id="reset" type="button">選択をリセット</button>
+  </section>
+  <section class="panel">
+    <input id="search" type="search" placeholder="モンスター名で検索" aria-label="モンスター名で検索">
+  </section>
+  <div id="count" aria-live="polite">読み込み中...</div>
+  <div class="list" id="list"></div>
+</main>
+<script src="./monsters.js"></script>
+<script>
+(() => {
+  const selected = new Set();
+  const attrs = document.getElementById("attrs");
+  const search = document.getElementById("search");
+  const count = document.getElementById("count");
+  const list = document.getElementById("list");
+
+  function render() {
+    if (!Array.isArray(window.monsters) && typeof monsters === "undefined") {
+      count.textContent = "データを読み込めませんでした。monsters.js が同じフォルダにあるか確認してください。";
+      list.replaceChildren();
+      return;
+    }
+    const query = search.value.trim().toLowerCase();
+    const filtered = monsters.filter(([name, weaknesses]) => {
+      const attrMatch = selected.size === 0 || ([...selected].some(attr => weaknesses.includes(attr)));
+      return attrMatch && name.toLowerCase().includes(query);
+    });
+    count.textContent = `${filtered.length} / ${monsters.length}体`;
+    list.replaceChildren();
+    if (filtered.length === 0) {
+      const message = document.createElement("p");
+      message.className = "empty";
+      message.textContent = "該当するモンスターはいません。";
+      list.append(message);
+      return;
+    }
+    for (const [name, weaknesses] of filtered) {
+      const card = document.createElement("article");
+      card.className = "monster";
+      const nameEl = document.createElement("div");
+      nameEl.className = "name";
+      nameEl.textContent = name;
+      const weaknessEl = document.createElement("div");
+      weaknessEl.className = "weakness";
+      weaknessEl.textContent = "弱点：" + (weaknesses || "なし／不明");
+      card.append(nameEl, weaknessEl);
+      list.append(card);
+    }
+  }
+
+  attrs.addEventListener("click", event => {
+    const button = event.target.closest("button[data-attr]");
+    if (!button) return;
+    const attr = button.dataset.attr;
+    if (selected.has(attr)) selected.delete(attr);
+    else selected.add(attr);
+    button.setAttribute("aria-pressed", String(selected.has(attr)));
+    render();
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    selected.clear();
+    attrs.querySelectorAll("button[data-attr]").forEach(button => button.setAttribute("aria-pressed", "false"));
+    search.value = "";
+    render();
+  });
+  search.addEventListener("input", render);
+  render();
+})();
+</script>
+</body>
+</html>
