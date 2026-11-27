@@ -1,117 +1,21 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#172033">
-<title>勇者ローグ 属性チェッカー</title>
-<style>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172033"><title>勇者ローグ 属性チェッカー - 対象外一覧</title><style>
 :root{color-scheme:dark;--bg:#101827;--panel:#1b2638;--panel2:#243248;--text:#eef3fb;--muted:#a9b7ca;--accent:#79b8ff;--line:#35445b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px 14px}
-main{max-width:760px;margin:auto}h1{font-size:1.55rem;margin:0 0 8px}.sub{color:var(--muted);font-size:.92rem;margin:0 0 22px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
-h2{font-size:1.05rem;margin:0 0 12px}.attrs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-button{font:inherit;cursor:pointer}.attr{border:1px solid #52627a;border-radius:11px;padding:12px 6px;background:var(--panel2);color:var(--text);font-weight:700}
-.attr[aria-pressed=true]{background:#24578b;border-color:#79b8ff;box-shadow:0 0 0 2px #79b8ff33}
-.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.count{background:#24578b;color:#eaf4ff;padding:5px 10px;border-radius:999px;font-size:.88rem;font-weight:700}
-input{width:100%;margin:12px 0 0;padding:12px;border-radius:10px;border:1px solid #52627a;background:#111c2c;color:var(--text);font:inherit}
-.list{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.list li{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
-.muted{color:var(--muted);font-size:.84rem}.actions{display:flex;justify-content:flex-end;margin-top:12px}
-.reset{border:1px solid #65758d;background:transparent;color:var(--text);border-radius:9px;padding:8px 12px}
-footer{color:var(--muted);font-size:.82rem;line-height:1.6;margin:18px 2px}
-a{color:var(--accent)}
-@media(max-width:480px){body{padding:18px 10px}.attrs{grid-template-columns:repeat(4,1fr);gap:7px}.attr{padding:11px 3px}.list{grid-template-columns:1fr}.panel{padding:14px}}
-</style>
-</head>
-<body>
-<main>
-<h1>勇者ローグ 属性チェッカー</h1>
-<p class="sub">属性を複数選択すると、選択した属性がどれも弱点ではないモンスターを表示します。(ちゆコップ[★]未対応)</p>
-<section class="panel">
-<h2>属性を選択（複数選択可）</h2>
-<div class="attrs" id="attrs"></div>
-<p class="muted">選択中の属性は青く表示されます。もう一度押すと解除できます。</p>
-</section>
-<section class="panel">
-<div class="row"><h2 id="resultTitle">属性が選択されていません</h2><span class="count" id="count">0体</span></div>
-<input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み">
-<ul class="list" id="list"></ul>
-<div class="actions"><button class="reset" id="reset">選択をすべて解除</button></div>
-</section>
-<footer>
-データ出典：<a href="https://wikiwiki.jp/yusharogue/モンスター" target="_blank" rel="noopener">勇者ローグ Wiki「モンスター」</a>（モンスターデータ一覧・弱点欄）<br>
-※「対象ではない」は、選択した属性が弱点欄に記載されていないという意味です。属性攻撃が無効であることを示すものではありません。
-</footer>
-</main>
-<script>
-const attributes = ["炎","水","風","土","雷","闇","聖"];
-// Wikiのモンスター一覧の弱点欄を転記。各行：[モンスター名, 弱点属性]
-const monsters = [
-["水ライム[*]","炎風土雷"],["水ライム[**]","炎風土雷"],["水ライム[***]","炎風土雷"],["水ライム[★]","炎風雷"],
-["炎ライム[*]","水土闇"],["炎ライム[**]","水土闇"],["炎ライム[***]","水土闇"],
-["土ライム[*]","水風"],["土ライム[**]","水風"],["土ライム[***]","水風"],
-["風ライム[*]","炎闇"],["風ライム[**]","炎闇"],["風ライム[***]","炎闇"],
-["雷ライム[*]","土闇"],["雷ライム[**]","土闇"],["雷ライム[***]","土闇"],
-["闇ライム[*]","雷聖"],["闇ライム[**]","雷聖"],["闇ライム[***]","雷聖"],
-["パトライム[*]","闇"],["パトライム[**]","闇"],["パトライム[***]","闇"],["パトライム[★]","闇"],
-["りんぐ","風雷聖"],["らせん","風雷聖"],["るーぷ","風雷聖"],
-["ドーラ","炎水雷闇"],["ドドーラ","炎水雷闇"],["ドンドーラ","炎水雷闇"],
-["パワー[*]","水風"],["パワー[**]","水風"],["パワー[***]","水風"],
-["ゴービン[2]","炎水風雷"],["ゴービン[3]","炎水風雷"],["ゴービン[4]","炎水風雷"],
-["ゴース","炎聖"],["ゴースト","炎聖"],["ゴーストアーク","炎聖"],
-["ほねほね","炎水雷聖"],["ほねかわ","炎雷聖"],["ほねくろ","炎雷聖"],
-["グリー","炎土雷聖"],["グリム","炎土雷聖"],["グリムアーク","炎土雷聖"],
-["キーヤ","炎水風"],["テツヤ","炎水風"],["ギンヤ","炎水風"],
-["アプー","炎雷聖闇"],["アプール","炎雷聖闇"],["アプールX","炎雷聖闇"],
-["黒龍","炎水闇"],["紅龍","水闇"],["蒼龍","水闇"],
-["ロケット1号機","水雷聖闇"],["ロケット2号機","水雷聖闇"],["ロケット3号機","水雷聖闇"],
-["デビー","風聖"],["デビル","風聖"],["デビルアーク","風聖"],
-["闇落ち勇者","雷聖"],
-["黒鬼","炎土雷聖"],["青鬼","炎土雷聖"],["赤鬼","炎土雷聖"],
-["ベリー","炎雷聖"],["ブルーベリー","炎雷聖"],["ラズベリー","炎雷聖"],
-["ペス","土雷聖"],["ペスト","土雷聖"],["ペストマン","土雷聖"],
-["メギー","闇"],["メギド","闇"],["メギドラ","闇"],
-["魔女っ娘","炎風雷聖"],["魔女","炎風雷聖"],["大魔女","炎風雷聖"],
-["コソドロ","炎水風聖"],["中ドロ","炎風雷聖"],["大ドロ","炎風雷聖"],
-["マミー","炎雷聖"],["ミイラ","炎雷聖"],["シニー","炎雷聖"],
-["骨騎士[*]","炎雷聖"],["骨騎士[**]","炎雷聖"],["骨騎士[***]","炎雷聖"],
-["ベル","水雷聖"],["ベルル","水雷聖"],["ベルール","水雷聖"],
-["ちゆコップ[*]","水雷"],["ちゆコップ[**]","水雷"],["ちゆコップ[***]","水雷"],
-["パンダ","聖"]
-];
-const selected = new Set();
-const attrsEl = document.getElementById("attrs");
-const listEl = document.getElementById("list");
-const countEl = document.getElementById("count");
-const titleEl = document.getElementById("resultTitle");
-const searchEl = document.getElementById("search");
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px 14px}main{max-width:760px;margin:auto}h1{font-size:1.55rem;margin:0 0 8px}.sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}h2{font-size:1.05rem;margin:0 0 12px}.attrs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}button{font:inherit;cursor:pointer}.attr{border:1px solid #52627a;border-radius:11px;padding:12px 6px;background:var(--panel2);color:var(--text);font-weight:700}.attr[aria-pressed=true]{background:#24578b;border-color:#79b8ff;box-shadow:0 0 0 2px #79b8ff33}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.count{background:#24578b;color:#eaf4ff;padding:5px 10px;border-radius:999px;font-size:.88rem;font-weight:700}input{width:100%;margin:12px 0 0;padding:12px;border-radius:10px;border:1px solid #52627a;background:#111c2c;color:var(--text);font:inherit}.list{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.list li{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px}.muted{color:var(--muted);font-size:.84rem}.actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}.reset,.nav a{border:1px solid #65758d;background:transparent;color:var(--text);border-radius:9px;padding:9px 12px;text-decoration:none;display:inline-block}.nav{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.nav a.active{background:#24578b;border-color:#79b8ff}footer{color:var(--muted);font-size:.82rem;line-height:1.6;margin:18px 2px}a{color:var(--accent)}@media(max-width:480px){body{padding:18px 10px}.attrs{grid-template-columns:repeat(4,1fr);gap:7px}.attr{padding:11px 3px}.list{grid-template-columns:1fr}.panel{padding:14px}}
+</style><script src="./monsters.js"></script></head><body><main>
+<h1>勇者ローグ 属性チェッカー</h1><p class="sub">属性を複数選択して、モンスターの弱点(必中)を確認できます。(ちゆコップ[★]非対応)</p>
+<nav class="nav"><a href="./index.html" class="active" aria-current="page">対象外一覧</a><a href="./target.html">対象一覧</a></nav>
+<section class="panel"><h2>属性を選択（複数選択可）</h2><div class="attrs" id="attrs"></div><p class="muted">選択中の属性は青く表示されます。もう一度押すと解除できます。</p></section>
+<section class="panel"><div class="row"><h2>対象外一覧</h2><span class="count" id="count">0体</span></div><p class="muted">選択した属性のすべてが弱点欄にないモンスターを表示します。</p><input id="search" type="search" placeholder="モンスター名で絞り込み" aria-label="モンスター名で絞り込み"><ul class="list" id="list"></ul><div class="actions"><span class="muted">収録データ：{monsters.length}件</span><button class="reset" id="reset">選択をすべて解除</button></div></section>
+<footer>データ出典：<a href="https://wikiwiki.jp/yusharogue/モンスター" target="_blank" rel="noopener">勇者ローグ Wiki「モンスター」</a>（弱点欄）<br>※「対象外」は選択属性が弱点欄に記載されていないという意味で、属性攻撃が無効という意味ではありません。<br>※対象一覧は選択属性のうち1つ以上が弱点として記載されているモンスターです。</footer>
+</main><script>
+const attributes=["炎","水","風","土","雷","闇","聖"],selected=new Set();
+const attrsEl=document.getElementById("attrs"),listEl=document.getElementById("list"),countEl=document.getElementById("count"),searchEl=document.getElementById("search");
 function render(){
-  attrsEl.innerHTML = "";
-  attributes.forEach(a=>{
-    const b=document.createElement("button");
-    b.className="attr"; b.type="button"; b.textContent=a+(selected.has(a)?" ✓":"");
-    b.setAttribute("aria-pressed",String(selected.has(a)));
-    b.addEventListener("click",()=>{selected.has(a)?selected.delete(a):selected.add(a);render();});
-    attrsEl.appendChild(b);
-  });
-  const chosen=[...selected];
-  titleEl.textContent=chosen.length?chosen.join("・")+"属性が弱点ではない敵":"属性が選択されていません";
-  const q=searchEl.value.trim().toLocaleLowerCase("ja");
-  const filtered=monsters.filter(([name,weak])=>chosen.length>0 && chosen.every(a=>!weak.includes(a)) && name.toLocaleLowerCase("ja").includes(q));
-  countEl.textContent=filtered.length+"体";
-  listEl.replaceChildren();
-  if(!chosen.length){
-    const li=document.createElement("li");li.textContent="上のボタンから属性を選択してください。";listEl.appendChild(li);
-  }else if(!filtered.length){
-    const li=document.createElement("li");li.textContent="該当するモンスターはいません。";listEl.appendChild(li);
-  }else{
-    filtered.forEach(([name])=>{const li=document.createElement("li");li.textContent=name;listEl.appendChild(li);});
-  }
+ attrsEl.replaceChildren();attributes.forEach(a=>{const b=document.createElement("button");b.className="attr";b.type="button";b.textContent=a+(selected.has(a)?" ✓":"");b.setAttribute("aria-pressed",String(selected.has(a)));b.addEventListener("click",()=>{selected.has(a)?selected.delete(a):selected.add(a);render()});attrsEl.appendChild(b)});
+ const chosen=[...selected],q=searchEl.value.trim().toLocaleLowerCase("ja");listEl.replaceChildren();
+ if(!chosen.length){countEl.textContent="0体";const li=document.createElement("li");li.textContent="上のボタンから属性を選択してください。";listEl.appendChild(li);return}
+ const filtered=monsters.filter(([name,weaknesses])=>selected.every(a => !weaknesses.includes(a)) && name.toLocaleLowerCase("ja").includes(q));countEl.textContent=filtered.length+"体";
+ if(!filtered.length){const li=document.createElement("li");li.textContent="該当するモンスターはいません。";listEl.appendChild(li)}else filtered.forEach(([name])=>{const li=document.createElement("li");li.textContent=name;listEl.appendChild(li)});
 }
-searchEl.addEventListener("input",render);
-document.getElementById("reset").addEventListener("click",()=>{selected.clear();searchEl.value="";render();});
-render();
-</script>
-</body>
-</html>
+searchEl.addEventListener("input",render);document.getElementById("reset").addEventListener("click",()=>{selected.clear();searchEl.value="";render()});render();
+</script></body></html>
